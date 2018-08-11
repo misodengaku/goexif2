@@ -10,11 +10,12 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/xor-gate/goexif2/tiff"
+	"github.com/misodengaku/goexif2/tiff"
 )
 
 const (
@@ -159,7 +160,7 @@ func IsInteroperabilityError(err error) bool {
 type tiffError int
 
 const (
-	loadExif             tiffError = iota
+	loadExif tiffError = iota
 	loadGPS
 	loadInteroperability
 )
@@ -651,6 +652,18 @@ func (x *Exif) getBytesFromTagOffsets(startTagField, lengthTagField FieldName) (
 // all EXIF fields present (names and values).
 func (x Exif) MarshalJSON() ([]byte, error) {
 	return json.Marshal(x.main)
+}
+
+// SortKeys returns sorted FieldName list.
+func (x Exif) SortKeys() []FieldName {
+	keys := []FieldName{}
+	for k := range x.main {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return strings.Compare(string(keys[i]), string(keys[j])) < 0
+	})
+	return keys
 }
 
 type appSec struct {

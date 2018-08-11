@@ -6,9 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/xor-gate/goexif2/exif"
-	"github.com/xor-gate/goexif2/mknote"
-	"github.com/xor-gate/goexif2/tiff"
+	"github.com/misodengaku/goexif2/exif"
+	"github.com/misodengaku/goexif2/mknote"
 )
 
 var mnote = flag.Bool("mknote", false, "try to parse makernote data")
@@ -34,6 +33,7 @@ func main() {
 			log.Printf("err on %v: %v", name, err)
 			continue
 		}
+		keys := x.SortKeys()
 
 		if *thumb {
 			data, err := x.JpegThumbnail()
@@ -47,17 +47,12 @@ func main() {
 		}
 
 		fmt.Printf("\n---- Image '%v' ----\n", name)
-		x.Walk(Walker{})
+		for _, k := range keys {
+			ex, _ := x.Get(k)
+			fmt.Printf("    %v: %v\n", k, ex)
+		}
 		if x.Comment != "" {
 			fmt.Printf("    %v: %v\n", "Comment", x.Comment)
 		}
 	}
-}
-
-type Walker struct{}
-
-func (_ Walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
-	data, _ := tag.MarshalJSON()
-	fmt.Printf("    %v: %v\n", name, string(data))
-	return nil
 }
